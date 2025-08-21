@@ -3,8 +3,9 @@
 Clone repository:
 ```git clone https://github.com/gilangarta06/Catatan-keuangan.git
 cd Catatan-keuangan```
+
 Instal dependensi:
-npm install
+```npm install```
 atau
 yarn
 Konfigurasi environment:
