@@ -94,6 +94,15 @@
             <tbody></tbody>
           </table>
         </div>
+
+        <!-- Ringkasan Saldo -->
+        <div id="summary" class="mt-3">
+          <p><strong>Pemasukan:</strong> <span id="totalMasuk">Rp 0</span></p>
+          <p><strong>Pengeluaran:</strong> <span id="totalKeluar">Rp 0</span></p>
+          <hr>
+          <h5><strong>Saldo:</strong> <span id="saldo">Rp 0</span></h5>
+        </div>
+
       </div>
     </div>
   </div>
@@ -116,6 +125,10 @@
     const btnExportPDF = document.getElementById('btnExportPDF');
     const btnExportExcel = document.getElementById('btnExportExcel');
 
+    const totalMasukEl = document.getElementById('totalMasuk');
+    const totalKeluarEl = document.getElementById('totalKeluar');
+    const saldoEl = document.getElementById('saldo');
+
     function rupiah(n){
       return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(n);
     }
@@ -132,6 +145,7 @@
       const res = await fetch(API + currentQuery());
       const data = await res.json();
       renderTable(data);
+      updateSummary(data);
     }
 
     function renderTable(data){
@@ -151,6 +165,19 @@
       });
     }
 
+    function updateSummary(data){
+      let masuk = 0, keluar = 0;
+      data.forEach(t => {
+        if (t.type === 'masuk') masuk += t.price;
+        else if (t.type === 'keluar') keluar += t.price;
+      });
+      const saldo = masuk - keluar;
+
+      totalMasukEl.textContent = rupiah(masuk);
+      totalKeluarEl.textContent = rupiah(keluar);
+      saldoEl.textContent = rupiah(saldo);
+    }
+
     function escapeHtml(s){
       return String(s)
         .replaceAll('&','&amp;')
@@ -167,11 +194,8 @@
       else alert('Gagal menghapus');
     }
 
-    // Form submit + front-end validation
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
-
-      // Bootstrap validation styling
       const controls = [inputBy, type, itemType, price, date];
       let valid = true;
       controls.forEach(c => {
@@ -213,7 +237,6 @@
       window.open('/export/excel' + currentQuery(), '_blank');
     });
 
-    // Init
     loadData();
   </script>
 </body>
