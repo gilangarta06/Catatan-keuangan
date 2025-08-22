@@ -11,7 +11,7 @@ import {
 
 dotenv.config();
 
-// ====== Helpers ======
+// ====== Konfigurasi whitelist ======
 const allowedNumbers = (process.env.ALLOWED_NUMBERS || '')
   .split(',')
   .map(s => s.trim())
@@ -20,6 +20,15 @@ const allowedNumbers = (process.env.ALLOWED_NUMBERS || '')
 // ubah "62812xxxx" -> "62812xxxx@s.whatsapp.net"
 const allowedJids = new Set(allowedNumbers.map(n => `${n}@s.whatsapp.net`));
 
+// grup whitelist
+const allowedGroups = (process.env.ALLOWED_GROUPS || '')
+  .split(',')
+  .map(s => s.trim())
+  .filter(Boolean);
+
+const allowedGroupJids = new Set(allowedGroups);
+
+// ====== Helper ======
 const currency = n =>
   new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(n);
 
@@ -79,12 +88,38 @@ async function start() {
       if (!m || !m.message) return;
 
       // identifikasi pengirim
-      const jid = m.key.remoteJid; // grup atau pribadi
-      const senderJid = m.key.participant || jid; // di personal participant undefined
-      if (!allowedJids.has(senderJid)) return; // whitelist only
+      const jid = m.key.remoteJid; // ID chat (personal/grup)
+      const senderJid = m.key.participant || jid; // kalau personal, participant undefined
 
+      // ====== parsing pesan ======
       const text = parseText(m.message);
-      if (!text) return;
+
+      // ===== DEBUG LOG =====
+      // console.log('--- DEBUG START ---');
+      // console.log('Remote JID:', jid);
+      // console.log('Sender JID:', senderJid);
+      // console.log('Text:', text);
+      // console.log('Is personal number allowed:', allowedJids.has(senderJid));
+      // console.log('Is group allowed:', allowedGroupJids.has(jid));
+      // console.log('--- DEBUG END ---');
+
+      // whitelist check
+      if (jid.endsWith('@s.whatsapp.net')) {
+        if (!allowedJids.has(jid)) {
+          console.log('❌ Pesan dari nomor pribadi tidak diizinkan');
+          return;
+        }
+      } else if (jid.endsWith('@g.us')) {
+        if (!allowedGroupJids.has(jid)) {
+          console.log('❌ Pesan dari grup tidak diizinkan');
+          return;
+        }
+      }
+
+      if (!text) {
+        console.log('❌ Pesan kosong');
+        return;
+      }
 
       const [rawCmd, rawNominal, ...rest] = text.split(' ');
       const cmd = rawCmd?.toLowerCase();
