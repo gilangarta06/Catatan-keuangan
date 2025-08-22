@@ -57,11 +57,10 @@ app.get('/export/pdf', async (req, res) => {
     const doc = new PDFDocument({
       size: 'A4',
       margin: 40,
-      bufferPages: true // penting untuk page numbers
+      bufferPages: true 
     });
     doc.pipe(res);
 
-    // Helpers
     const pageWidth = doc.page.width - doc.page.margins.left - doc.page.margins.right;
     const startX = doc.page.margins.left;
     let cursorY = doc.y;
@@ -73,7 +72,6 @@ app.get('/export/pdf', async (req, res) => {
       return `${dt.getDate()}/${dt.getMonth()+1}/${dt.getFullYear()}`;
     };
 
-    // Kolom: ID, Nama Penginput, Jenis, Item, Nominal, Tanggal
     const colWidths = {
       id: 140,
       name: 100,
@@ -82,20 +80,18 @@ app.get('/export/pdf', async (req, res) => {
       nominal: 90,
       date: 60
     };
-    // jika total > pageWidth, sesuaikan (skala)
+  
     const totalColsWidth = Object.values(colWidths).reduce((a,b)=>a+b,0);
     if (totalColsWidth > pageWidth) {
       const scale = pageWidth / totalColsWidth;
       for (const k in colWidths) colWidths[k] = Math.floor(colWidths[k] * scale);
     }
 
-    // Draw header (title + printed date)
     doc.font('Helvetica-Bold').fontSize(16).text('Laporan Transaksi', { align: 'center' });
     const printedAt = new Date();
     doc.font('Helvetica').fontSize(9).text(`Dicetak: ${printedAt.toLocaleString('id-ID')}`, doc.page.width - doc.page.margins.right - 200, doc.y - 18, { align: 'right', width: 200 });
     doc.moveDown(1);
 
-    // Table top position and styling
     cursorY = doc.y;
     const rowHeight = 20;
     const headerBgColor = '#f2f2f2';
@@ -103,12 +99,9 @@ app.get('/export/pdf', async (req, res) => {
     const borderColor = '#d9d9d9';
     const textColor = '#000';
 
-    // Draw table header background rect
     doc.save();
     doc.rect(startX, cursorY, pageWidth, rowHeight).fill(headerBgColor);
     doc.restore();
-
-    // Draw header text (center for some columns)
     doc.fillColor('#000').font('Helvetica-Bold').fontSize(10);
     let x = startX;
     doc.text('ID', x + 4, cursorY + 5, { width: colWidths.id - 8, align: 'left' });
@@ -122,24 +115,16 @@ app.get('/export/pdf', async (req, res) => {
     doc.text('Nominal', x + 4, cursorY + 5, { width: colWidths.nominal - 8, align: 'center' });
     x += colWidths.nominal;
     doc.text('Tanggal', x + 4, cursorY + 5, { width: colWidths.date - 8, align: 'center' });
-
-    // Draw header bottom border
     doc.moveTo(startX, cursorY + rowHeight).lineTo(startX + pageWidth, cursorY + rowHeight).strokeColor(borderColor).lineWidth(0.5).stroke();
-
-    // Advance Y
     cursorY += rowHeight;
-
     doc.font('Helvetica').fontSize(10);
 
-    // Function to make a new page and redraw header (for multi-page)
     const newPageAndHeader = () => {
       doc.addPage();
       cursorY = doc.y;
-      // title on new page header
       doc.font('Helvetica-Bold').fontSize(12).text('Laporan Transaksi', { align: 'center' });
       doc.moveDown(0.5);
       cursorY = doc.y;
-      // draw table header again
       doc.save();
       doc.rect(startX, cursorY, pageWidth, rowHeight).fill(headerBgColor);
       doc.restore();
@@ -156,26 +141,20 @@ app.get('/export/pdf', async (req, res) => {
       doc.font('Helvetica').fontSize(10);
     };
 
-    // Function to check page overflow
     const ensureSpace = (needed) => {
       if (cursorY + needed > doc.page.height - doc.page.margins.bottom - 30) {
         newPageAndHeader();
       }
     };
 
-    // Draw rows
     data.forEach((t, idx) => {
-      // Pre-calc item text wrap height (rough)
       const idText = String(t._id);
       const nameText = t.inputBy || '-';
       const typeText = t.type || '-';
       const itemText = t.itemType || '-';
       const nominalText = rupiah(t.price || 0);
       const dateText = formatDate(t.date);
-
-      // Estimate lines for wrapped text (simple approach)
       const measureWidth = (text, width, fontSize=10) => {
-        // approximate char per line = width / (fontSize * 0.55)
         const approxCharsPerLine = Math.floor(width / (fontSize * 0.55));
         const lines = Math.ceil(String(text).length / Math.max(1, approxCharsPerLine));
         return lines;
@@ -188,15 +167,12 @@ app.get('/export/pdf', async (req, res) => {
       const thisRowHeight = Math.max(rowHeight, lines * 12 + 8);
 
       ensureSpace(thisRowHeight + 4);
-
-      // background stripe
       if (idx % 2 === 0) {
         doc.save();
         doc.rect(startX, cursorY, pageWidth, thisRowHeight).fill(stripeBg);
         doc.restore();
       }
 
-      // draw cell texts
       let posX = startX;
       doc.fillColor(textColor).font('Helvetica').fontSize(9);
 
@@ -217,13 +193,11 @@ app.get('/export/pdf', async (req, res) => {
 
       doc.text(dateText, posX + 4, cursorY + 6, { width: colWidths.date - 8, align: 'center' });
 
-      // draw row bottom border
       doc.moveTo(startX, cursorY + thisRowHeight).lineTo(startX + pageWidth, cursorY + thisRowHeight).strokeColor(borderColor).lineWidth(0.4).stroke();
 
       cursorY += thisRowHeight;
     });
 
-    // Footer: page numbers (requires bufferPages)
     const pages = doc.bufferedPageRange(); // { start: 0, count: N }
     for (let i = pages.start; i < pages.start + pages.count; i++) {
       doc.switchToPage(i);
