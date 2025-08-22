@@ -21,25 +21,21 @@ app.use(express.json());
 app.use(morgan('dev'));
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Koneksi MongoDB
-const MONGODB_URI = process.env.MONGODB_URI;
-if (!MONGODB_URI) {
+// MongoDB
+const URI = process.env.MONGODB_URI;
+if (!URI) {
   console.error('MONGODB_URI belum di-set di .env');
   process.exit(1);
 }
+mongoose.connect(URI).then(() => console.log('✅ MongoDB connected')).catch((e) => {
+  console.error('❌ MongoDB error:', e.message);
+  process.exit(1);
+});
 
-mongoose
-  .connect(MONGODB_URI)
-  .then(() => console.log('MongoDB connected'))
-  .catch((err) => {
-    console.error('MongoDB connection error:', err.message);
-    process.exit(1);
-  });
-
-// Routes API
+// API
 app.use('/api/transactions', transactionsRouter);
 
-// Export PDF (respect filter ?from=YYYY-MM-DD&to=YYYY-MM-DD)
+// Export PDF
 app.get('/export/pdf', async (req, res) => {
   try {
     const { from, to } = req.query;
@@ -53,7 +49,6 @@ app.get('/export/pdf', async (req, res) => {
         filter.date.$lte = end;
       }
     }
-
     const data = await Transaction.find(filter).sort({ date: -1, createdAt: -1 });
 
     res.setHeader('Content-Type', 'application/pdf');
@@ -63,26 +58,29 @@ app.get('/export/pdf', async (req, res) => {
     doc.pipe(res);
 
     doc.fontSize(16).text('Laporan Transaksi', { align: 'center' });
-    doc.moveDown(0.5);
     if (from || to) {
-      doc.fontSize(10).text(`Filter tanggal: ${from || '-'} s/d ${to || '-'}`, { align: 'center' });
-      doc.moveDown(0.5);
+      doc.moveDown(0.5).fontSize(10)
+        .text(`Periode: ${from || '-'} s/d ${to || '-'}`, { align: 'center' });
     }
 
     const headers = ['Nama', 'Jenis', 'Item', 'Harga', 'Tanggal'];
-    const colWidths = [120, 60, 140, 80, 100];
-
-    // Header table
-    doc.moveDown(0.5);
-    headers.forEach((h, i) => doc.fontSize(10).text(h, { continued: i < headers.length - 1, width: colWidths[i] }));
-    doc.moveDown(0.2);
-    doc.moveTo(doc.x, doc.y).lineTo(550, doc.y).stroke();
+    const widths  = [120, 60, 160, 90, 90];
+    doc.moveDown(1);
+    headers.forEach((h, i) => doc.fontSize(10).text(h, { continued: i < headers.length - 1, width: widths[i] }));
+    doc.moveTo(40, doc.y + 2).lineTo(555, doc.y + 2).stroke();
 
     const rupiah = (n) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(n);
+    doc.moveDown(0.5);
 
-    data.forEach((t) => {
-      const row = [t.inputBy, t.type, t.itemType, rupiah(t.price), new Date(t.date).toLocaleDateString('id-ID')];
-      row.forEach((val, i) => doc.fontSize(10).text(String(val), { continued: i < row.length - 1, width: colWidths[i] }));
+    data.forEach(t => {
+      const row = [
+        t.inputBy,
+        t.type,
+        t.itemType,
+        rupiah(t.price),
+        new Date(t.date).toLocaleDateString('id-ID')
+      ];
+      row.forEach((val, i) => doc.fontSize(10).text(String(val), { continued: i < row.length - 1, width: widths[i] }));
     });
 
     doc.end();
@@ -92,7 +90,7 @@ app.get('/export/pdf', async (req, res) => {
   }
 });
 
-// Export Excel (respect filter)
+// Export Excel
 app.get('/export/excel', async (req, res) => {
   try {
     const { from, to } = req.query;
@@ -106,20 +104,18 @@ app.get('/export/excel', async (req, res) => {
         filter.date.$lte = end;
       }
     }
-
     const data = await Transaction.find(filter).sort({ date: -1, createdAt: -1 });
 
     const wb = new ExcelJS.Workbook();
     const ws = wb.addWorksheet('Transaksi');
     ws.columns = [
       { header: 'Nama', key: 'inputBy', width: 25 },
-      { header: 'Jenis', key: 'type', width: 10 },
+      { header: 'Jenis', key: 'type', width: 12 },
       { header: 'Item', key: 'itemType', width: 25 },
       { header: 'Harga', key: 'price', width: 15 },
-      { header: 'Tanggal', key: 'date', width: 15 }
+      { header: 'Tanggal', key: 'date', width: 16 }
     ];
-
-    data.forEach((t) => {
+    data.forEach(t => {
       ws.addRow({
         inputBy: t.inputBy,
         type: t.type,
@@ -141,4 +137,4 @@ app.get('/export/excel', async (req, res) => {
 });
 
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
+app.listen(PORT, () => console.log(`🌐 Dashboard ready: http://localhost:${PORT}`));
