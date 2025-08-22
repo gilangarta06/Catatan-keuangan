@@ -1,2 +1,4 @@
 .env
 node_modules
+start-server.bat
+wa-session
