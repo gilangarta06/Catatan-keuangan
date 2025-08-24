@@ -17,10 +17,8 @@ const allowedNumbers = (process.env.ALLOWED_NUMBERS || '')
   .map(s => s.trim())
   .filter(Boolean);
 
-// ubah "62812xxxx" -> "62812xxxx@s.whatsapp.net"
 const allowedJids = new Set(allowedNumbers.map(n => `${n}@s.whatsapp.net`));
 
-// grup whitelist
 const allowedGroups = (process.env.ALLOWED_GROUPS || '')
   .split(',')
   .map(s => s.trim())
@@ -47,7 +45,7 @@ function mapType(cmd) {
 }
 
 // ====== Main ======
-async function start() {
+async function startBot() {
   try {
     // DB connect
     const uri = process.env.MONGODB_URI;
@@ -76,7 +74,7 @@ async function start() {
         const code = lastDisconnect?.error?.output?.statusCode;
         if (code !== DisconnectReason.loggedOut) {
           console.log('↻ Reconnecting in 3s...');
-          setTimeout(() => start().catch(console.error), 3000);
+          setTimeout(() => startBot().catch(console.error), 3000);
         } else {
           console.log('🔒 Logged out. Hapus folder "wa-session" untuk login ulang.');
         }
@@ -87,21 +85,9 @@ async function start() {
       const m = messages?.[0];
       if (!m || !m.message) return;
 
-      // identifikasi pengirim
-      const jid = m.key.remoteJid; // ID chat (personal/grup)
-      const senderJid = m.key.participant || jid; // kalau personal, participant undefined
-
-      // ====== parsing pesan ======
+      const jid = m.key.remoteJid;
+      const senderJid = m.key.participant || jid;
       const text = parseText(m.message);
-
-      // ===== DEBUG LOG =====
-      // console.log('--- DEBUG START ---');
-      // console.log('Remote JID:', jid);
-      // console.log('Sender JID:', senderJid);
-      // console.log('Text:', text);
-      // console.log('Is personal number allowed:', allowedJids.has(senderJid));
-      // console.log('Is group allowed:', allowedGroupJids.has(jid));
-      // console.log('--- DEBUG END ---');
 
       // whitelist check
       if (jid.endsWith('@s.whatsapp.net')) {
@@ -179,8 +165,8 @@ async function start() {
     });
 
   } catch (err) {
-    console.error('Fatal error start():', err);
+    console.error('Fatal error startBot():', err);
   }
 }
 
-start().catch(console.error);
+export default startBot;

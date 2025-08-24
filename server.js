@@ -198,7 +198,7 @@ app.get('/export/pdf', async (req, res) => {
       cursorY += thisRowHeight;
     });
 
-    const pages = doc.bufferedPageRange(); // { start: 0, count: N }
+    const pages = doc.bufferedPageRange();
     for (let i = pages.start; i < pages.start + pages.count; i++) {
       doc.switchToPage(i);
       const p = i - pages.start + 1;
@@ -212,8 +212,6 @@ app.get('/export/pdf', async (req, res) => {
     res.status(500).json({ message: 'Gagal export PDF', error: err.message });
   }
 });
-
-export default app;
 
 
 // Export Excel
@@ -262,5 +260,9 @@ app.get('/export/excel', async (req, res) => {
   }
 });
 
-const PORT = process.env.PORT || 8080;
-app.listen(PORT, () => console.log(`🌐 Dashboard ready: http://localhost:${PORT}`));
+function startServer() {
+  const PORT = process.env.PORT || 8080;
+  app.listen(PORT, () => console.log(`🌐 Dashboard ready: http://localhost:${PORT}`));
+}
+
+export default startServer;
