@@ -158,6 +158,28 @@ async function startBot() {
           return;
         }
 
+        // ====== cek saldo ======
+        if (cmd === 'saldo') {
+          const masuk = await Transaction.aggregate([
+            { $match: { type: 'masuk' } },
+            { $group: { _id: null, total: { $sum: '$price' } } }
+          ]);
+
+          const keluar = await Transaction.aggregate([
+            { $match: { type: 'keluar' } },
+            { $group: { _id: null, total: { $sum: '$price' } } }
+          ]);
+
+          const totalMasuk = masuk[0]?.total || 0;
+          const totalKeluar = keluar[0]?.total || 0;
+          const saldo = totalMasuk - totalKeluar;
+
+          await sock.sendMessage(jid, {
+            text: `💰 Saldo saat ini: ${currency(saldo)}\n\n📈 Total Pemasukan: ${currency(totalMasuk)}\n📉 Total Pengeluaran: ${currency(totalKeluar)}`
+          });
+          return;
+        }
+
       } catch (e) {
         console.error(e);
         await sock.sendMessage(jid, { text: `❌ Error: ${e.message}` });
