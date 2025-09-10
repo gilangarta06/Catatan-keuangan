@@ -9,9 +9,9 @@ Hanya **nomor WhatsApp** dan **grup WhatsApp** yang sudah terdaftar di konfigura
 - ✅ **Keamanan Akses**
   - Hanya nomor dan grup yang diizinkan (`ALLOWED_NUMBERS`, `ALLOWED_GROUPS`) bisa menambah/menghapus data.
 - 📥 **Input via WhatsApp**
-  - `+10000 gaji` → tambah pemasukan Rp10.000 dengan keterangan *gaji*
-  - `-5000 makan` → tambah pengeluaran Rp5.000 dengan keterangan *makan*
-  - `hapus 3` → hapus catatan dengan ID `3`
+  - `pemasukan 10000 gaji` → tambah pemasukan Rp10.000 dengan keterangan *gaji*
+  - `pengeluaran 5000 makan` → tambah pengeluaran Rp5.000 dengan keterangan *makan*
+  - `hapus ID_Transaksi` → hapus catatan dengan ID `3`
   - `saldo` → tampilkan saldo terkini
 - 📊 **Dashboard Web**
   - Lihat daftar pemasukan & pengeluaran
@@ -20,28 +20,19 @@ Hanya **nomor WhatsApp** dan **grup WhatsApp** yang sudah terdaftar di konfigura
 
 ---
 
-## 🛠️ Teknologi
-- **Node.js + Express** → Backend API  
-- **MongoDB (Mongoose)** → Database  
-- **Baileys** → WhatsApp Bot  
-- **ExcelJS & PDFKit** → Ekspor laporan  
-- **dotenv, cors, morgan** → Utility  
-
-> Dependensi lengkap tersedia di `package.json`. Jalankan `npm install` untuk menginstal semuanya.
-
----
-
 ## 🚀 Cara Menjalankan
 1. Clone repo:
    ```bash
    git clone https://github.com/gilangarta06/Catatan-keuangan.git
+   
+   ```
    cd Catatan-keuangan
-Install dependencies:
 
-bash
-Copy code
+2. Install dependencies:
+```bash
 npm install
-Buat file .env (jangan di-commit). Gunakan contoh dari .env.example:
+
+Ubah file .env.example menjadi .env dan mengisi informasi bot anda :
 
 env
 Copy code
