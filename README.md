@@ -21,7 +21,7 @@ Hanya **nomor WhatsApp** dan **grup WhatsApp** yang sudah terdaftar di konfigura
 ---
 
 ## 🚀 Cara Menjalankan
-1. Clone repo:
+## 1. Clone repo:
    ```
    git clone https://github.com/gilangarta06/Catatan-keuangan.git
    ```
@@ -38,7 +38,7 @@ npm install
 Ubah file .env.example menjadi .env dan mengisi informasi bot anda :
 ```
 
-## Database
+# Database
 ```
 MONGODB_URI=mongodb+srv://<username>:<password>@cluster0.mongodb.net/<dbname>?retryWrites=true&w=majority
 ```
