@@ -23,7 +23,6 @@ Hanya **nomor WhatsApp** dan **grup WhatsApp** yang sudah terdaftar di konfigura
 ## 🚀 Cara Menjalankan
 1. Clone repo:
    ```
-   bash
    git clone https://github.com/gilangarta06/Catatan-keuangan.git
    ```
    
@@ -32,41 +31,35 @@ Hanya **nomor WhatsApp** dan **grup WhatsApp** yang sudah terdaftar di konfigura
    ```
 
 ## 2. Install dependencies:
-```bash
+```
 npm install
-
+```
+```
 Ubah file .env.example menjadi .env dan mengisi informasi bot anda :
+```
 
-env
-Copy code
-# Database
+## Database
+```
 MONGODB_URI=mongodb+srv://<username>:<password>@cluster0.mongodb.net/<dbname>?retryWrites=true&w=majority
+```
 
 # Server
+```
 PORT=8080
+```
 
 # WhatsApp Access
-# Nomor WA yang boleh input (pisahkan dengan koma, format E.164)
+```
 ALLOWED_NUMBERS=628xxxxxxxxxx,628yyyyyyyyyy
+```
 
 # Grup WA yang boleh input
+```
 ALLOWED_GROUPS=120xxxxxxxxxx@g.us
 Jalankan aplikasi:
+```
 
-bash
-Copy code
+# Start Bot
+```
 node index.js
-📖 Cara Penggunaan
-Pastikan nomor/grup Anda terdaftar di .env (ALLOWED_NUMBERS / ALLOWED_GROUPS).
-
-Kirim pesan ke WA bot dengan format:
-
-+jumlah keterangan → catat pemasukan
-
--jumlah keterangan → catat pengeluaran
-
-hapus ID → hapus catatan berdasarkan ID
-
-saldo → lihat saldo terakhir
-
-Akses dashboard web untuk memantau catatan keuangan.
+```
