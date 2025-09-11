@@ -22,12 +22,16 @@ Hanya **nomor WhatsApp** dan **grup WhatsApp** yang sudah terdaftar di konfigura
 
 ## 🚀 Cara Menjalankan
 1. Clone repo:
-   ```bash
+   ```
+   bash
    git clone https://github.com/gilangarta06/Catatan-keuangan.git
+   ```
    
-   ```cd Catatan-keuangan```
+   ```
+   cd Catatan-keuangan
+   ```
 
-2. Install dependencies:
+## 2. Install dependencies:
 ```bash
 npm install
 
